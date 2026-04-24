@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Master | Bunk Smart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s ease; }
+        .glass { backdrop-filter: blur(10px); transition: all 0.3s ease; }
+        .dark body { background: #0f172a; color: white; }
+        .light body { background: #f8fafc; color: #1e293b; }
+        .dark .glass { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .light .glass { background: white; border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .input-style { background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.2); transition: 0.3s; }
+        .light .input-style { background: #f1f5f9; border: 1px solid #e2e8f0; }
+        .ad-slot { background: rgba(120, 120, 120, 0.05); border: 1px dashed rgba(120, 120, 120, 0.2); display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 0.7rem; text-transform: uppercase; border-radius: 12px; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; padding: 20px; }
+        .modal.active { display: flex; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-8 px-6">
+
+    <button onclick="toggleTheme()" class="fixed top-6 right-6 p-3 rounded-full glass z-50 hover:scale-110 transition-transform shadow-lg">
+        <span id="themeIcon">🌙</span>
+    </button>
+
+    <div class="ad-slot w-full max-w-4xl h-24 mb-10">Leaderboard Ad Area</div>
+
+    <main class="max-w-md w-full glass rounded-3xl p-8 shadow-2xl">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent italic">Attendance Master</h1>
+            <p class="text-slate-500 text-[10px] mt-2 font-bold tracking-[0.2em] uppercase">Bunk with Intelligence</p>
+        </header>
+
+        <div class="space-y-6">
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-sm font-semibold opacity-70">Goal</label>
+                    <div class="flex items-center text-blue-500 font-bold">
+                        <input type="number" id="targetNum" value="75" class="w-10 bg-transparent text-right outline-none">
+                        <span>%</span>
+                    </div>
+                </div>
+                <input type="range" id="targetSlider" min="1" max="100" value="75" class="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-slate-200 dark:bg-slate-700">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-400 mb-1 block ml-1">Present</label>
+                    <input type="number" id="present" placeholder="0" class="input-style w-full p-4 rounded-2xl text-center text-xl font-bold">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-400 mb-1 block ml-1">Total</label>
+                    <input type="number" id="total" placeholder="0" class="input-style w-full p-4 rounded-2xl text-center text-xl font-bold">
+                </div>
+            </div>
+
+            <button onclick="calculate()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition transform active:scale-95 shadow-lg shadow-blue-500/20">
+                Analyze
+            </button>
+        </div>
+
+        <div id="results" class="mt-8 hidden border-t border-slate-200 dark:border-white/10 pt-8 animate-in fade-in">
+            <div id="errorBox" class="hidden p-4 rounded-xl bg-red-500/10 text-red-500 text-sm border border-red-500/20 text-center mb-4 font-semibold">
+                Oops! Present count cannot be higher than total.
+            </div>
+            <div id="statsUI" class="space-y-4 text-center">
+                <p id="currentPerc" class="text-5xl font-black">0%</p>
+                <div id="message" class="p-6 rounded-2xl font-bold text-lg transition-all duration-500"></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="ad-slot w-full max-w-md h-64 my-10">Square Ad Area</div>
+
+    <footer class="mt-auto py-6 text-slate-400 text-[10px] flex flex-wrap justify-center gap-6 uppercase tracking-widest font-semibold text-center">
+        <button onclick="openModal('privacy')" class="hover:text-blue-500 transition">Privacy Policy</button>
+        <button onclick="openModal('terms')" class="hover:text-blue-500 transition">Terms</button>
+        <a href="mailto:relife.trilogy@gmail.com" class="hover:text-blue-500 transition">Contact</a>
+    </footer>
+
+    <div id="privacy" class="modal" onclick="closeModal('privacy')">
+        <div class="glass max-w-lg w-full p-8 rounded-3xl max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-bold mb-4 text-blue-500">Privacy Policy</h2>
+            <div class="text-sm text-slate-400 space-y-4 leading-relaxed">
+                <p><strong>Data Privacy:</strong> We prioritize your privacy. All attendance calculations are processed locally on your device. We do not store, collect, or see the numbers you enter.</p>
+                <p><strong>Ads & Cookies:</strong> We use Google AdSense. Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to this or other websites.</p>
+                <p><strong>Contact:</strong> For privacy concerns, reach us at relife.trilogy@gmail.com.</p>
+            </div>
+            <button onclick="closeModal('privacy')" class="mt-6 w-full py-3 bg-blue-600/20 text-blue-400 rounded-xl font-bold hover:bg-blue-600/30 transition">Close</button>
+        </div>
+    </div>
+
+    <div id="terms" class="modal" onclick="closeModal('terms')">
+        <div class="glass max-w-lg w-full p-8 rounded-3xl max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-bold mb-4 text-blue-500">Terms of Service</h2>
+            <div class="text-sm text-slate-400 space-y-4 leading-relaxed">
+                <p><strong>User Responsibility:</strong> Attendance Master is a calculation tool. We are not responsible for any academic repercussions, including exam disqualification, resulting from the use of this app.</p>
+                <p><strong>Math Disclaimer:</strong> We aim for 100% mathematical accuracy, but users should always cross-verify results with their institution's official portal.</p>
+                <p><strong>Acceptance:</strong> By using this tool, you acknowledge that "bunking" is done at your own risk.</p>
+            </div>
+            <button onclick="closeModal('terms')" class="mt-6 w-full py-3 bg-blue-600/20 text-blue-400 rounded-xl font-bold hover:bg-blue-600/30 transition">I Agree</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const h = document.documentElement;
+            const i = document.getElementById('themeIcon');
+            h.classList.toggle('dark'); h.classList.toggle('light');
+            i.innerText = h.classList.contains('dark') ? '🌙' : '☀️';
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        const slider = document.getElementById('targetSlider');
+        const numInput = document.getElementById('targetNum');
+        slider.oninput = () => numInput.value = slider.value;
+        numInput.oninput = () => { if(numInput.value > 100) numInput.value = 100; slider.value = numInput.value; };
+
+        function calculate() {
+            const p = parseInt(document.getElementById('present').value);
+            const t = parseInt(document.getElementById('total').value);
+            const target = parseInt(numInput.value);
+            const req = target / 100;
+            const res = document.getElementById('results');
+            const err = document.getElementById('errorBox');
+            const stats = document.getElementById('statsUI');
+            const msg = document.getElementById('message');
+
+            if (isNaN(p) || isNaN(t) || t === 0) return;
+            res.classList.remove('hidden');
+
+            if (p > t) {
+                err.classList.remove('hidden'); stats.classList.add('hidden');
+                return;
+            }
+
+            err.classList.add('hidden'); stats.classList.remove('hidden');
+            const current = (p / t) * 100;
+            document.getElementById('currentPerc').innerText = current.toFixed(1) + "%";
+
+            if (current > target) {
+                let canBunk = Math.floor((p / req) - t);
+                msg.className = "p-6 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+                msg.innerHTML = `Safe! You can bunk <span class="text-3xl block font-black">${canBunk}</span> more classes.`;
+            } else if (Math.abs(current - target) < 0.1) {
+                msg.className = "p-6 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20";
+                msg.innerText = "You are exactly on track. Don't bunk!";
+            } else {
+                let mustAttend = Math.ceil((req * t - p) / (1 - req));
+                msg.className = "p-6 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20";
+                msg.innerHTML = `Shortage! Attend <span class="text-3xl block font-black">${mustAttend}</span> more classes.`;
+            }
+        }
+    </script>
+</body>
+</html>
